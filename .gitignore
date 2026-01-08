@@ -19,3 +19,7 @@ test-results/
 
 # Cucumber
 reports/
+
+# Reportes generados (subir SOLO PDFs)
+evidencias_pipeline/cucumber-reports/
+evidencias_pipeline/playwright-report/
