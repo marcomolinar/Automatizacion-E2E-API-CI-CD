@@ -1,0 +1,23 @@
+{
+  "name": "automatizacion-e2e-api-ci-cd",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test:e2e": "playwright test",
+    "test:bdd": "cucumber-js --require-module ts-node/register --require features/step_definitions/**/*.ts features/**/*.feature",
+    "test:all": "npm run test:bdd && npm run test:e2e",
+    "test:api": "cucumber-js --require-module ts-node/register --require features/step_definitions/**/*.ts --tags @api features/**/*.feature"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@cucumber/cucumber": "^12.5.0",
+    "@playwright/test": "^1.57.0",
+    "@types/node": "^25.0.3",
+    "dotenv": "^17.2.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}
