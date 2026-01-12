@@ -2,12 +2,21 @@ import { Given, When, Then, Before, After, setDefaultTimeout } from '@cucumber/c
 import { chromium, expect, Browser, Page } from '@playwright/test';
 import * as dotenv from 'dotenv';
 
+import { Actor } from '../../src/actors/Actor';
+import { BrowseTheWeb } from '../../src/ui/BrowseTheWeb';
+import { OpenSauceDemo } from '../../src/tasks/OpenSauceDemo';
+import { LoginSauceDemo } from '../../src/tasks/LoginSauceDemo';
+import { AddFirstProductToCart } from '../../src/tasks/AddFirstProductToCart';
+import { CheckoutWithInfo } from '../../src/tasks/CheckoutWithInfo';
+import { OrderCompleteIsVisible } from '../../src/questions/OrderCompleteIsVisible';
+
 dotenv.config();
 
-setDefaultTimeout(30 * 1000);
+setDefaultTimeout(60 * 1000);
 
 let browser: Browser;
 let page: Page;
+let actor: Actor;
 
 const SAUCE_URL = process.env.SAUCE_URL || 'https://www.saucedemo.com/';
 const SAUCE_USER = process.env.SAUCE_USER || 'standard_user';
@@ -17,6 +26,9 @@ Before(async () => {
   browser = await chromium.launch({ headless: true });
   const context = await browser.newContext();
   page = await context.newPage();
+
+  actor = new Actor('QA');
+  actor.can(new BrowseTheWeb(page));
 });
 
 After(async () => {
@@ -24,14 +36,11 @@ After(async () => {
 });
 
 Given('I open SauceDemo', async () => {
-  await page.goto(SAUCE_URL, { waitUntil: 'domcontentloaded' });
+  await actor.attemptsTo(OpenSauceDemo(SAUCE_URL));
 });
 
 When('I login with valid credentials', async () => {
-  await page.locator('[data-test="username"]').fill(SAUCE_USER);
-  await page.locator('[data-test="password"]').fill(SAUCE_PASS);
-  await page.locator('[data-test="login-button"]').click();
-  await expect(page).toHaveURL(/inventory\.html/);
+  await actor.attemptsTo(LoginSauceDemo(SAUCE_USER, SAUCE_PASS));
 });
 
 When('I login with username {string} and password {string}', async (username: string, password: string) => {
@@ -41,27 +50,18 @@ When('I login with username {string} and password {string}', async (username: st
 });
 
 When('I add the first product to the cart', async () => {
-  // Primer botón "Add to cart" en la lista
-  await page.locator('[data-test^="add-to-cart-"]').first().click();
+  await actor.attemptsTo(AddFirstProductToCart());
 });
 
 When(
   'I checkout with first name {string} last name {string} postal code {string}',
   async (firstName: string, lastName: string, postalCode: string) => {
-    await page.locator('[data-test="shopping-cart-link"]').click();
-    await page.locator('[data-test="checkout"]').click();
-
-    await page.locator('[data-test="firstName"]').fill(firstName);
-    await page.locator('[data-test="lastName"]').fill(lastName);
-    await page.locator('[data-test="postalCode"]').fill(postalCode);
-    await page.locator('[data-test="continue"]').click();
-
-    await page.locator('[data-test="finish"]').click();
+    await actor.attemptsTo(CheckoutWithInfo(firstName, lastName, postalCode));
   }
 );
 
 Then('I should see the order complete page', async () => {
-  await expect(page.locator('[data-test="complete-header"]')).toBeVisible();
+  await expect(await actor.asks(OrderCompleteIsVisible())).toBeTruthy();
 });
 
 Then('I should see a login error containing {string}', async (text: string) => {

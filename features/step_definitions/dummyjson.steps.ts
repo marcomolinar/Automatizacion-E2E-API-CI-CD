@@ -4,12 +4,13 @@ import * as dotenv from 'dotenv';
 
 dotenv.config();
 
-const BASE_URL = process.env.DUMMYJSON_URL || 'https://dummyjson.com';
+const BASE_URL = process.env.DUMMYJSON_BASE_URL || process.env.DUMMYJSON_URL || 'https://dummyjson.com';
 
 let api: APIRequestContext;
 let lastResponse: APIResponse;
 let lastJson: any;
 let token: string | undefined;
+let lastEndpoint: string | undefined;
 
 Before({ tags: '@api' }, async () => {
   api = await request.newContext({
@@ -93,4 +94,22 @@ Then('the response should have a users array', async () => {
 Then('the response should have the field {string}', async (field: string) => {
   expect(lastJson, 'Response is not JSON or is empty').toBeTruthy();
   expect(Object.prototype.hasOwnProperty.call(lastJson, field), `Field "${field}" not found in response`).toBeTruthy();
+});
+
+Then('the response status should be one of {int} or {int}', async (a: number, b: number) => {
+  expect(lastResponse, 'No response stored yet').toBeTruthy();
+  const s = lastResponse.status();
+  expect([a, b]).toContain(s);
+});
+
+Then('the field {string} should be a string', async (field: string) => {
+  expect(lastJson, 'Response is not JSON or is empty').toBeTruthy();
+  expect(lastJson[field], `Field "${field}" not found`).toBeTruthy();
+  expect(typeof lastJson[field]).toBe('string');
+});
+
+Then('the field {string} should be a number', async (field: string) => {
+  expect(lastJson, 'Response is not JSON or is empty').toBeTruthy();
+  expect(lastJson[field], `Field "${field}" not found`).toBeTruthy();
+  expect(typeof lastJson[field]).toBe('number');
 });

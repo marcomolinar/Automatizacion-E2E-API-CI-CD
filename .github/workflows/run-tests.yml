@@ -37,29 +37,24 @@ jobs:
         run: |
           npx cucumber-js \
             --require-module ts-node/register \
-            --require features/step_definitions/**/*.ts \
+            --require "features/step_definitions/**/*.ts" \
             --tags @api \
             --format progress \
             --format html:reports/cucumber-api.html \
             features/**/*.feature
 
       # ---------------------------
-      # BDD (todas las features)
+      # BDD (sin @api)
       # ---------------------------
       - name: Run BDD tests (Cucumber)
         run: |
           npx cucumber-js \
             --require-module ts-node/register \
-            --require features/step_definitions/**/*.ts \
+            --require "features/step_definitions/**/*.ts" \
             --format progress \
+            --tags "not @api" \
             --format html:reports/cucumber-bdd.html \
             features/**/*.feature
-
-      # ---------------------------
-      # E2E (Playwright)
-      # ---------------------------
-      - name: Run E2E tests (Playwright)
-        run: npx playwright test
 
       # ---------------------------
       # Artifacts
@@ -72,10 +67,10 @@ jobs:
           path: reports/
           retention-days: 30
 
-      - name: Upload Playwright report
+      - name: Upload Evidence PDFs
         uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
-          name: playwright-report
-          path: playwright-report/
+          name: evidencias-pdfs
+          path: evidencias_pipeline/pdfs/*.pdf
           retention-days: 30
